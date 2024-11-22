@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <style>
+        /* General Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            color: #4a90e2;
+            margin-bottom: 20px;
+        }
+
+        /* Flash Messages */
+        .flash-messages {
+            list-style: none;
+            background-color: #e0f7fa;
+            color: #00796b;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        /* Buttons */
+        button {
+            padding: 10px 20px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: #fff;
+            background-color: #4a90e2;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #357ab8;
+        }
+
+        /* Personal Info */
+        #personalInfo {
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #4a90e2;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        /* Forms */
+        form {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        input[type="file"] {
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        input[type="submit"], button[type="submit"] {
+            align-self: flex-start;
+        }
+
+        /* Document Display */
+        .document-item, .appointment-item {
+            background-color: #f1f1f1;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .document-item p, .appointment-item p {
+            margin: 5px 0;
+        }
+
+        /* Logout Button */
+        .btn-danger {
+            background-color: #e74c3c;
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .collapse {
+    transition: height 0.3s ease;
+}
+
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome, {{ student.First_Name }} {{ student.Last_Name }}</h1>
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="flash-messages">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% endwith %}
+        <!-- Personal Info Button -->
+        <button onclick="showPersonalInfo()">Personal Info</button>
+        <div id="personalInfo" style="display: none;">
+            <p><strong>SRN:</strong> {{ student.SRN }}</p>
+            <p><strong>Department:</strong> {{ student.Department }}</p>
+            <p><strong>Email:</strong> {{ student.Email }}</p>
+        </div>
+
+        <!-- Team Information (Above Exams Info) -->
+        <div class="team-info">
+            <h2>Team Information</h2>
+            <p><strong>Team Name:</strong> {{ team.Team_Name }}</p>
+            <p><strong>Team Members:</strong></p>
+            <ul>
+                {% for member in team_members %}
+                <li>{{ member.First_Name }} {{ member.Last_Name }} ({{ member.SRN }})</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="guide-info">
+            <h2>Guide Information</h2>
+            <p><strong>Guide Name:</strong> {{ guide.First_Name }} {{ guide.Last_Name }}</p>
+            <p><strong>Department:</strong> {{ guide.Department }}</p>
+            <p><strong>Email:</strong> {{ guide.Email }}</p>
+        </div>
+
+        <!-- Combined Exam Schedule and Grades Table -->
+<div class="exams">
+    <h2>Exam Schedule</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Exam ID</th>
+                <th>Exam Date</th>
+                <th>Exam Type</th>
+                <th>Timings</th>
+                <th>Venue</th>
+                <th>Semester</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for exam in exam_schedule %}
+            <tr>
+                <td>{{ exam.Exam_ID }}</td>
+                <td>{{ exam.Exam_Date }}</td>
+                <td>{{ exam.Exam_Type }}</td>
+                <td>{{ exam.Timings }}</td>
+                <td>{{ exam.Venue }}</td>
+                <td>{{ exam.Semester }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+        
+        <!-- Exam Grades Table -->
+<div class="exams">
+    <h2>Exam Grades</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Semester</th>
+                <th>ISA1</th>
+                <th>ISA2</th>
+                <th>ESA</th>
+                <th>Total</th>
+                <th>Grade</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for exam in exams %}
+            <tr>
+                <td>{{ exam.Semester }}</td>
+                <td>{{ exam.ISA1 }}</td>
+                <td>{{ exam.ISA2 }}</td>
+                <td>{{ exam.ESA }}</td>
+                <td>{{ exam.total }}</td>
+                <td>{{ exam.grade }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+        <!-- Project Info -->
+        <div class="project">
+            <h2>Project Details</h2>
+            <p><strong>Project Name:</strong> {{ project.Project_Name }}</p>
+            <p><strong>Description:</strong> {{ project.Description }}</p>
+            <p><strong>Current Progress:</strong> {{ project.Progress }}%</p>
+        </div>
+
+        <!-- Update Progress Form -->
+        <form action="{{ url_for('update_progress') }}" method="POST">
+            <label for="progress">Update Project Progress:</label>
+            <input type="number" id="progress" name="progress" min="0" max="100" required>
+            <input type="hidden" name="project_id" value="{{ project.Project_ID }}">
+            <button type="submit">Update Progress</button>
+        </form>
+
+
+        <!-- Document Upload -->
+        <div class="documents">
+            <h2>Documents</h2>
+            <!-- Document upload form -->
+            <form action="{{ url_for('upload_document') }}" method="post" enctype="multipart/form-data">
+                <label for="document">Choose a file to upload:</label>
+                <input type="file" name="document" id="document" required>
+                
+                <label for="Upload_Date">Upload Date:</label>
+                <input type="text" id="Upload_Date" name="Upload_Date" required placeholder="YYYY-MM-DD">
+
+
+                
+                <label for="Versionn">Version:</label>
+                <input type="text" name="Versionn" id="Versionn" placeholder="Versionn" required>
+                
+                <button type="submit">Upload</button>
+            </form>
+        
+            <!-- Display uploaded documents -->
+            {% for document in documents %}
+            <div class="document-item">
+                <p><strong>File Path:</strong> {{ document.Filepath }}</p>
+                <p><strong>Upload Date:</strong> {{ document.Upload_Date }}</p>
+                <p><strong>Version:</strong> {{ document.Versionn }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        
+
+        <!-- Appointments -->
+        <div class="appointments">
+            <h2>Appointments</h2>
+            <form action="{{ url_for('schedule_appointment') }}" method="post">
+                <input type="text" name="date" required placeholder="YYYY-MM-DD">
+                <input type="text" name="description" placeholder="Description" required>
+                <button type="submit">Schedule Appointment</button>
+            </form>
+            {% for appointment in appointments %}
+            <div class="appointment-item">
+                <p><strong>Date:</strong> {{ appointment.Appointment_Date }}</p>
+                <p><strong>Description:</strong> {{ appointment.Descript }}</p>
+                <p><strong>Status:</strong> {{ appointment.Statuss }}</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Logout Button -->
+    <form method="POST" action="{{ url_for('logout') }}">
+        <button type="submit" class="btn btn-danger">Logout</button>
+    </form>
+    
+    </div>
+    
+    
+
+
+    <script>
+        function showPersonalInfo() {
+            var personalInfo = document.getElementById("personalInfo");
+            personalInfo.style.display = personalInfo.style.display === "none" ? "block" : "none";
+        }
+    </script>
+</body>
+</html>

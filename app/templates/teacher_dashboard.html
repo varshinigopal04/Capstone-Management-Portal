@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Teacher Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Optional: Add some custom styling */
+        .team-details {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-left: 3px solid #007bff;
+        }
+        .collapse-link {
+            color: #007bff;
+            cursor: pointer;
+        }
+        
+    </style>
+</head>
+<body>
+
+<div class="container mt-4">
+    <h1>Teacher Dashboard</h1>
+    <h2>Welcome, {{ teacher['First_Name'] }}</h2>
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="flash-messages">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Button for Personal Information -->
+    <button class="btn btn-info mb-3" data-toggle="collapse" data-target="#personalInfo">Personal Info</button>
+    <div id="personalInfo" class="collapse">
+        <p><strong>Guide ID:</strong> {{ teacher.Guide_ID }}</p>
+        <p><strong>First Name:</strong> {{ teacher.First_Name }}</p>
+        <p><strong>Last Name:</strong> {{ teacher.Last_Name }}</p>
+        <p><strong>Department:</strong> {{ teacher.Department }}</p>
+        <p><strong>Email:</strong> {{ teacher.Email }}</p>
+        <p><strong>Faculty ID:</strong> {{ teacher.Faculty_ID }}</p>
+    </div>
+
+    <!-- Teams Table -->
+    <h2>Teams Under Your Guidance</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Serial Number</th>
+                <th>Team Name</th>
+                <th>Project Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for team_detail in team_details %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>
+                        <span class="collapse-link" data-toggle="collapse" data-target="#team{{ team_detail.team.Team_ID }}">
+                            {{ team_detail.team.Team_Name }}
+                        </span>
+                    </td>
+                    <td>{{ team_detail.team.Project_Name }}</td>
+                </tr>
+                <!-- Collapsible team details -->
+                <tr id="team{{ team_detail.team.Team_ID }}" class="collapse">
+                    <td colspan="3" class="team-details">
+                        <h5>Team Members</h5>
+                        <ul>
+                            {% for member in team_detail.members %}
+                                <li>{{ member.First_Name }} {{ member.Last_Name }} ({{ member.SRN }})</li>
+                            {% endfor %}
+                        </ul>
+                        <h5>Project Progress</h5>
+                        <p>{{ team_detail.project_progress }}%</p>
+        
+                        
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        
+    </table>
+
+    <!-- Section for Appointments -->
+    <h3>Your Appointments</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Appointment ID</th>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Team Name</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for team in team_details %}
+                {% for appointment in team.appointments %}
+                    <tr>
+                        <td>{{ appointment.Appointment_ID }}</td>
+                        <td>{{ appointment.Appointment_Date }}</td>
+                        <td>{{ appointment.Descript }}</td>
+                        <td>{{ appointment.Team_Name }}</td>
+                        <td>
+                            <form action="{{ url_for('update_appointment_status') }}" method="POST">
+                                <input type="hidden" name="appointment_id" value="{{ appointment.Appointment_ID }}">
+                                <select name="status" class="form-control">
+                                    <option value="Scheduled" {% if appointment.Statuss == 'Scheduled' %}selected{% endif %}>Scheduled</option>
+                                    <option value="Pending" {% if appointment.Statuss == 'Pending' %}selected{% endif %}>Pending</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-primary mt-2">Update Status</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+<!-- Panel Details Table -->
+<h2>Your Panels</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Panel ID</th>
+            <th>Teacher 1</th>
+            <th>Teacher 2</th>
+            <th>Teacher 3</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for panel in panels %}
+            <tr>
+                <td>{{ panel.Panel_ID }}</td>
+                <td>{{ panel.Teacher1_Name }}</td>
+                <td>{{ panel.Teacher2_Name }}</td>
+                <td>{{ panel.Teacher3_Name }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+
+    <h1>Enter Exam Marks</h1>
+
+    <form action="{{ url_for('update_marks_feedback') }}" method="POST">
+        <!-- Exam ID Input -->
+        <div class="form-group">
+            <label for="exam_id">Exam ID</label>
+            <input type="text" id="exam_id" name="exam_id" class="form-control" placeholder="Enter Exam ID" required>
+        </div>
+
+        <!-- Team ID Input -->
+        <div class="form-group">
+            <label for="team_id">Team ID</label>
+            <input type="text" id="team_id" name="team_id" class="form-control" placeholder="Enter Team ID" required>
+        </div>
+
+        <!-- SRN Input -->
+        <div class="form-group">
+            <label for="srn">SRN</label>
+            <input type="text" id="srn" name="srn" class="form-control" placeholder="Enter SRN" required>
+        </div>
+
+        <!-- ISA1 Marks Input -->
+        <div class="form-group">
+            <label for="isa1">ISA1 Marks</label>
+            <input type="number" id="isa1" name="isa1" class="form-control" placeholder="Enter ISA1 Marks" step="0.1" required>
+        </div>
+
+        <!-- ISA2 Marks Input -->
+        <div class="form-group">
+            <label for="isa2">ISA2 Marks</label>
+            <input type="number" id="isa2" name="isa2" class="form-control" placeholder="Enter ISA2 Marks" step="0.1" required>
+        </div>
+
+        <!-- ESA Marks Input -->
+        <div class="form-group">
+            <label for="esa">ESA Marks</label>
+            <input type="number" id="esa" name="esa" class="form-control" placeholder="Enter ESA Marks" step="0.1" required>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+    
+
+    <!-- Logout Button -->
+    <form method="POST" action="{{ url_for('logout') }}">
+        <button type="submit" class="btn btn-danger">Logout</button>
+    </form>
+    
+</div>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
